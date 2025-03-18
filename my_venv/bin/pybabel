@@ -1,4 +1,6 @@
-#!/Users/frantiseksuran/my_venv/bin/python3.12
+#!/bin/sh
+'''exec' "/Users/frantiseksuran/Documents/IES/Summer semester II/FEL/FELINTROAI/my_venv/bin/python3.11" "$0" "$@"
+' '''
 # -*- coding: utf-8 -*-
 import re
 import sys

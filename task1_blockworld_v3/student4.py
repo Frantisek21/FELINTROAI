@@ -1,6 +1,3 @@
-# This solution was prepared by František Šurán. Throughout the development process
-# I consulted a variety of publicly available sources, including programming documentation and ChatGPT
-# with the aim of creating clear and efficient code
 from blockworld import BlockWorld
 from queue import PriorityQueue
 
@@ -10,52 +7,51 @@ class BlockWorldHeuristic(BlockWorld):
 
     def heuristic(self, goal):
         """
-        Heuristic:
-        +1 if a block is above or below incorrectly
-        +2 if both are wrong
+        Heuristic: +1 if a block is above or below incorrectly, +2 if both are wrong
         """
         self_state = self.get_state()
         goal_state = goal.get_state()
         
-        # Convert to lists
+        # Convert frozensets to lists for easier manipulation
         current_stacks = [list(stack) for stack in self_state]
         goal_stacks = [list(stack) for stack in goal_state]
         
-        # Maps to track what is above and below each block
+        # Maps to track block relationships (what's above and below each block)
         current_relationships = {}
         goal_relationships = {}
         
-        # Process current state and the relationship
+        # Process current state relationships
         for stack in current_stacks:
             for i, block in enumerate(stack):
+                # In BlockWorld, index 0 is the top of the stack
                 above = None if i == 0 else stack[i-1]
                 below = None if i == len(stack)-1 else stack[i+1]
                 current_relationships[block] = {'above': above, 'below': below}
         
-        # Process goal state and the relatinoship
+        # Process goal state relationships
         for stack in goal_stacks:
             for i, block in enumerate(stack):
                 above = None if i == 0 else stack[i-1]
                 below = None if i == len(stack)-1 else stack[i+1]
                 goal_relationships[block] = {'above': above, 'below': below}
         
-        # Initialize heuristic value
+        # Calculate heuristic value
         heuristic_value = 0
-        # Check each block
+        
         for block in current_relationships:
             if block in goal_relationships:
                 current_rel = current_relationships[block]
                 goal_rel = goal_relationships[block]
                 
-                # Above relationship
+                # Check above relationship
                 above_wrong = current_rel['above'] != goal_rel['above']
                 
-                # Below relationship
+                # Check below relationship
                 below_wrong = current_rel['below'] != goal_rel['below']
                 
-                # Now we apply the penalties we defined
+                # Apply penalties based on heuristic definition
                 if above_wrong and below_wrong:
-                    heuristic_value += 2 
+                    heuristic_value += 2  # Both wrong
                 elif above_wrong or below_wrong:
                     heuristic_value += 1  # Only one is wrong
         
@@ -64,16 +60,24 @@ class BlockWorldHeuristic(BlockWorld):
 
 class AStar():
     def search(self, start, goal):
-        # Initialize structures
-        open_set = PriorityQueue() # Priority queue for unexplored nodes
+        # Initialize the priority queue for open nodes
+        open_set = PriorityQueue()
+        
+        # Set to keep track of visited nodes
         closed_set = set()
+        
+        # Dictionary to track the path
         came_from = {}
         action_to = {}
+        
+        # Cost from start to node
         g_score = {start: 0}
+        
+        # Estimated total cost
         f_score = {start: start.heuristic(goal)}
         
         # Add start to open set
-        # We use format (f_score, g_score, counter, node)
+        # Format: (f_score, g_score, counter, node)
         open_set.put((f_score[start], 0, 0, start))
         counter = 1
         
@@ -81,7 +85,7 @@ class AStar():
             # Get node with lowest f_score
             _, _, _, current = open_set.get()
             
-            # If goal found, reconstruct the path
+            # Found the goal
             if current == goal:
                 path = []
                 while current in came_from:
@@ -90,7 +94,7 @@ class AStar():
                 path.reverse()
                 return path
             
-            # Skip if already processed (Python needs a hashable value...)
+            # Skip if already processed
             if hash(current) in closed_set:
                 continue
                 
